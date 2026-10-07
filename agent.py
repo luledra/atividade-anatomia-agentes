@@ -156,7 +156,7 @@ def execute_llm_call(conversation: List[Dict[str, str]]):
     response = openai_client.chat.completions.create(
         model="qwen/qwen3.8-27b",
         messages=conversation,
-        max_completion_tokens=1000
+        max_completion_tokens=8000
     )
     return response.choices[0].message.content
 
@@ -181,13 +181,13 @@ def run_coding_agent_loop():
             print(f"\n{'-' * 20} ITERACAO {iteration} {'-' * 20}")
             assistant_response = execute_llm_call(conversation) or ""
             tool_invocations = extract_tool_invocations(assistant_response)
+            conversation.append({
+                "role": "assistant",
+                "content": assistant_response
+            })
             if not tool_invocations:
                 print(f"{ASSISTANT_COLOR}[THOUGHT] (resposta final){RESET_COLOR} {assistant_response}")
                 print("[ACTION] nenhuma: o parser nao encontrou 'tool: nome({...})' -> loop encerrado")
-                conversation.append({
-                    "role": "assistant",
-                    "content": assistant_response
-                })
                 break
             thought = "\n".join(
                 line for line in assistant_response.splitlines()
